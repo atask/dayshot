@@ -1,29 +1,36 @@
-var imageDir = './images';
-var fs = require('fs');
-var crypto = require('crypto');
+var imageDir = './images',
+    fs = require('fs'),
+    path = require('path'),
+    crypto = require('crypto'),
 
-var files = fs.readdirSync(path);
+    // list of file to process
+    basePath = path.join(__dirname, imageDir),
+    files = fs.readdirSync(basePath),
 
-files.forEach(function renameImage(imagePath) {
-    
+    hash, hashString,
+    imagePath, imageRs; 
+
+files.forEach(function renameImage(imageFileName) {
+    // get the file hash
+    debugger;
+    if (path.extname(imageFileName).toLowerCase() === '.jpg') {
+        imagePath = path.join(basePath, imageFileName);
+        imageRs = fs.createReadStream(imagePath);
+        hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        imageRs.on('end', function() {
+            hash.end();
+            hashString = hash.read();
+            console.log(hashString);
+        });
+
+        // read all file and pipe it (write it) to the hash object
+        imageRs.pipe(hash);
+    }
 });
 
-// the file you want to get the hash    
-var fd = fs.createReadStream(‘myImage.jpg’);
-var hash = crypto.createHash('sha256’);
-hash.setEncoding('hex');
-
-var result = ‘none’;
-
-fd.on('end', function() {
-    hash.end();
-    result = hash.read(); // the desired sha1sum
-    console.log(result);
-});
-
-// read all file and pipe it (write it) to the hash object
-fd.pipe(hash);
-
+/*
 fImage = require('exif').ExifImage;
 
 try {
@@ -36,4 +43,5 @@ try {
 } catch (error) {
     console.log('Error: ' + error.message);
 }
+*/
 
