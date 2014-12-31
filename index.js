@@ -1,47 +1,51 @@
 var imageDir = './images',
+    hashLength = 8,
     fs = require('fs'),
     path = require('path'),
     crypto = require('crypto'),
+    ExifImage = require('exif').ExifImage,
+    exifdate = require('exifdate'),
+    format = require('date-format'),
 
     // list of file to process
     basePath = path.join(__dirname, imageDir),
     files = fs.readdirSync(basePath),
 
-    hash, hashString,
-    imagePath, imageRs; 
+    hash,
+    imagePath, imageRs, imageDate, imageHash,
+    newFileName; 
 
 files.forEach(function renameImage(imageFileName) {
     // get the file hash
     debugger;
     if (path.extname(imageFileName).toLowerCase() === '.jpg') {
         imagePath = path.join(basePath, imageFileName);
-        imageRs = fs.createReadStream(imagePath);
-        hash = crypto.createHash('sha256');
-        hash.setEncoding('hex');
+        try {
+            new ExifImage({ image : imagePath }, function (error, exifData) {
+                if (error) {
+                    console.log(imageFileName + ': ' + error.message);
+                } else {
+                    // grab exif creation date and continue
+                    imageDate = exifdate(exifData.exif.DateTimeOriginal);
 
-        imageRs.on('end', function() {
-            hash.end();
-            hashString = hash.read();
-            console.log(hashString);
-        });
+                    imageRs = fs.createReadStream(imagePath);
+                    hash = crypto.createHash('sha256');
+                    hash.setEncoding('hex');
 
-        // read all file and pipe it (write it) to the hash object
-        imageRs.pipe(hash);
+                    imageRs.on('end', function() {
+                        hash.end();
+                        hashString = hash.read();
+                        newFileName = format.asString('yyyy-MM-dd', imageDate) + '-' + hashString.slice(-1 * hashLength);
+                        console.log('SUCCESS: ' + imageFileName + ' -> ' + newFileName);
+                    });
+
+                // read all file and pipe it (write it) to the hash object
+                imageRs.pipe(hash);
+                }
+            });
+        } catch (error) {
+            console.log('Error: ' + error.message);
+        }
     }
 });
-
-/*
-fImage = require('exif').ExifImage;
-
-try {
-    new ExifImage({ image : 'myImage.jpg' }, function (error, exifData) {
-        if (error)
-            console.log('Error: '+error.message);
-        else
-            console.log(exifData); // Do something with your data!
-    });
-} catch (error) {
-    console.log('Error: ' + error.message);
-}
-*/
 

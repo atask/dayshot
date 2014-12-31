@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/atask/dayshot",
   "dependencies": {
-    "exif": "^0.4.0"
+    "date-format": "0.0.2",
+    "exif": "^0.4.0",
+    "exifdate": "^0.1.3"
   }
 }
