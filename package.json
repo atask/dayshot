@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha test || exit 0",
+    "eslint": "eslint lib test || exit 0",
     "rename": "node ./lib/rename.js"
   },
   "repository": {
@@ -24,6 +25,8 @@
   },
   "devDependencies": {
     "chai": "^1.10.0",
+    "eslint": "^0.11.0",
+    "mocha": "^2.1.0",
     "mock-fs": "^2.3.2"
   }
 }
